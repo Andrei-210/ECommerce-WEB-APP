@@ -1,170 +1,132 @@
-# TechShop — Fullstack E-Commerce Exercise
+# ECommerce Application
 
-A fullstack e-commerce application built with **Angular 19** (frontend) and **ASP.NET Core 8** (backend), using **MS SQL Server** and raw ADO.NET (no ORM).
-
----
-
-## Project Structure
-
-```
-ecommerce/
-├── backend/
-│   ├── ECommerce.sln
-│   ├── database-setup.sql          ← Run this first!
-│   ├── ECommerceAPI/               ← ASP.NET Core Web API
-│   │   ├── Controllers/
-│   │   ├── Services/
-│   │   ├── Repositories/
-│   │   ├── Models/
-│   │   ├── DTOs/
-│   │   ├── appsettings.json
-│   │   └── Program.cs
-│   └── ECommerceAPI.Tests/         ← xUnit tests
-│       ├── OrderServiceTests.cs
-│       └── AuthServiceTests.cs
-└── frontend/
-    └── src/app/
-        ├── components/
-        │   ├── product-list/
-        │   ├── cart/
-        │   ├── checkout/
-        │   ├── register/
-        │   ├── login/
-        │   └── navbar/
-        ├── services/
-        │   ├── auth.service.ts
-        │   ├── cart.service.ts     ← BehaviorSubject state management
-        │   ├── product.service.ts
-        │   └── order.service.ts
-        ├── models/
-        ├── guards/
-        └── styles.css
-```
+A full-stack e-commerce application built with ASP.NET Core Web API (.NET 10) and Angular 19. The backend exposes a RESTful API connected to MS SQL Server (LocalDB), and the frontend is a Single Page Application that consumes it.
 
 ---
 
 ## Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/8)
-- [Node.js 24+ & npm 11+](https://nodejs.org/)
-- [Angular CLI 21+](https://angular.io/cli): `npm install -g @angular/cli`
-- SQL Server (local instance)
+Before running the project, ensure you have the following installed:
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) (v18 or later) and npm
+- [Angular CLI](https://angular.io/cli) v19: `npm install -g @angular/cli`
+- SQL Server LocalDB (included with Visual Studio, or install [SQL Server Express with LocalDB](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb))
 
 ---
 
-## Step 1 — Set Up the Database
+## Repository Structure
 
-Open **SQL Server Management Studio** (or use `sqlcmd`) and run:
-
-```sql
--- From: backend/database-setup.sql
 ```
-
-This will:
-1. Create the `ECommerceDB` database
-2. Create tables: `Users`, `Products`, `Orders`, `OrderItems`
-3. Seed 12 IT equipment products (laptops, printers, monitors, etc.)
+ECommerce/
+├── ECommerce.Server/           # .NET backend solution
+│   ├── ECommerceAPI/           # ASP.NET Core Web API project
+│   └── ECommerceAPI.Tests/     # xUnit unit tests
+├── ECommerce.client/           # Angular 19 frontend
+├── database-setup-localdb.sql  # SQL script to create and seed the database
+├── ECommerceDB.dacpac          # Database backup with populated products
+└── README.md
+```
 
 ---
 
-## Step 2 — Configure & Run the Backend
+## 1. Database Setup
 
-### 2a. Update connection string (if needed)
+You have two options to set up the database.
 
-Edit `backend/ECommerceAPI/appsettings.json`:
+### Option A: Using the SQL script (recommended for LocalDB)
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=ECommerceDB;Trusted_Connection=True;TrustServerCertificate=True;"
-  },
-  "Jwt": {
-    "Key": "SuperSecretKey_ChangeThisInProduction_MinLength32Chars!",
-    "Issuer": "ECommerceAPI",
-    "Audience": "ECommerceClient"
-  }
-}
+1. Open SQL Server Object Explorer in Visual Studio (View > SQL Server Object Explorer).
+2. Connect to `(localdb)\MSSQLLocalDB`.
+3. Right-click the server and select **New Query**.
+4. Open the file `database-setup-localdb.sql`, paste its contents into the query window, and execute it.
+
+This creates the `ECommerceDB` database with all tables and seeds 12 products.
+
+### Option B: Restoring the .dacpac file
+
+1. In Visual Studio, open SQL Server Object Explorer.
+2. Right-click on **Databases** under `(localdb)\MSSQLLocalDB`.
+3. Select **Publish Data-tier Application** and follow the wizard, pointing to `ECommerceDB.dacpac`.
+
+---
+
+## 2. Running the Backend (.NET API)
+
+The API uses the connection string below (already configured in `appsettings.json`):
+
+```
+Server=(localdb)\MSSQLLocalDB;Database=ECommerceDB;Trusted_Connection=True;TrustServerCertificate=True;
 ```
 
-> If you use SQL Server with username/password instead of Windows auth, change to:
-> `Server=localhost;Database=ECommerceDB;User Id=sa;Password=YourPassword;TrustServerCertificate=True;`
+No changes to configuration are needed if you are using LocalDB.
 
-### 2b. Restore packages and run
+### Steps
 
 ```bash
-cd backend/ECommerceAPI
+cd ECommerce.Server/ECommerceAPI
 dotnet restore
 dotnet run
 ```
 
-The API will start at **http://localhost:5000**
+The API will start at:
+- `http://localhost:60429`
+- `https://localhost:60428`
 
-OpenAPI spec available at: **http://localhost:5000/openapi/v1.json**
-
-> .NET 10 folosește OpenAPI built-in în loc de Swashbuckle. Poți importa JSON-ul în Postman sau Swagger Editor online.
+The Angular frontend is configured to call `http://localhost:60429/api`.
 
 ---
 
-## Step 3 — Run the Frontend
+## 3. Running the Frontend (Angular)
 
 ```bash
-cd frontend
+cd ECommerce.client
 npm install
 ng serve
 ```
 
-The app will open at **http://localhost:4200**
+The application will be available at `http://localhost:4200`.
 
 ---
 
-## Step 4 — Run Tests
+## 4. Running the Unit Tests
 
-### Backend (xUnit)
+### Backend tests (xUnit)
 
 ```bash
-cd backend
+cd ECommerce.Server/ECommerceAPI.Tests
 dotnet test
 ```
 
-### Frontend (Jasmine/Karma)
+### Frontend tests (Karma/Jasmine)
 
 ```bash
-cd frontend
+cd ECommerce.client
 ng test
 ```
 
 ---
 
-## API Endpoints
+## API Overview
 
-| Method | Endpoint               | Auth Required | Description              |
-|--------|------------------------|---------------|--------------------------|
-| POST   | /api/auth/register     | No            | Create a new account     |
-| POST   | /api/auth/login        | No            | Login, receive JWT token |
-| GET    | /api/products          | No            | List all products        |
-| GET    | /api/products/{id}     | No            | Get product by ID        |
-| POST   | /api/orders/checkout   | Yes (JWT)     | Place an order           |
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | /api/auth/register | Register a new user | No |
+| POST | /api/auth/login | Login and receive a JWT token | No |
+| GET | /api/products | Get all products | No |
+| GET | /api/products/{id} | Get a single product | No |
+| POST | /api/orders | Place an order | Yes |
+| GET | /api/orders | Get orders for the logged-in user | Yes |
+| POST | /api/reviews | Submit a product review | Yes |
+| GET | /api/reviews/{productId} | Get reviews for a product | No |
 
----
-
-## Key Architecture Decisions
-
-### Backend Price Calculation (Security)
-The backend **never trusts the price sent by the frontend**. During checkout (`POST /api/orders/checkout`), the `OrderService` fetches product prices directly from the database and recalculates the total server-side. This prevents price manipulation attacks.
-
-### State Management
-The Angular `CartService` uses **RxJS `BehaviorSubject`** to hold cart state. All components subscribe to `items$` and `totalCount` reactively — the navbar cart counter updates instantly when a product is added anywhere in the app.
-
-### No ORM
-All database access uses raw **ADO.NET** (`SqlCommand`, `SqlDataReader`) with parameterized queries to prevent SQL injection.
-
-### Dependency Injection
-All services and repositories are registered in `Program.cs` using ASP.NET Core's built-in DI container (`AddScoped`, `AddSingleton`).
+Authentication uses JWT Bearer tokens. After logging in, the token is stored in the browser and automatically attached to protected requests via an HTTP interceptor.
 
 ---
 
-## Notes
+## Architecture Notes
 
-- JWT tokens expire after **8 hours**
-- Checkout requires authentication (redirects to login if not logged in)
-- Browsing products and adding to cart works without login
+- The backend uses raw ADO.NET with `Microsoft.Data.SqlClient`. No ORM is used.
+- Dependency Injection is configured in `Program.cs` for all repositories and services.
+- The total order price is always calculated server-side from the product database during checkout. The price sent by the frontend is ignored.
+- Cart state in the frontend is managed via an Angular Service using `BehaviorSubject` (RxJS), so the cart counter updates instantly across all components.
