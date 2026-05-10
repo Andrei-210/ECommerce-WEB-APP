@@ -1,4 +1,4 @@
-# ECommerce Application
+# TechShop
 
 A full-stack e-commerce application built with ASP.NET Core Web API (.NET 10) and Angular 19. The backend exposes a RESTful API connected to MS SQL Server (LocalDB), and the frontend is a Single Page Application that consumes it.
 
