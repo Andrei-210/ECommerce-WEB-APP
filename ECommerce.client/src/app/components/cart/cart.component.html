@@ -1,0 +1,66 @@
+<div class="page-container">
+  <h2 class="page-title">Shopping Cart</h2>
+
+  <ng-container *ngIf="items$ | async as items">
+    <div *ngIf="items.length === 0" class="empty-cart">
+      <p>🛒 Your cart is empty.</p>
+      <a routerLink="/products" class="btn-primary">Browse Products</a>
+    </div>
+
+    <div *ngIf="items.length > 0">
+      <div class="cart-table-wrapper">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Unit Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items">
+              <td class="product-cell">
+                <img
+                  [src]="item.product.imageUrl || 'https://via.placeholder.com/60x60'"
+                  [alt]="item.product.name"
+                  class="cart-img"
+                  (error)="$any($event.target).src='https://via.placeholder.com/60x60'">
+                <div class="cart-product-info">
+                  <strong>{{ item.product.name }}</strong>
+                  <small>{{ item.product.brand }}</small>
+                </div>
+              </td>
+              <td class="cart-td">{{ item.product.price | currency:'RON ':'symbol':'1.2-2' }}</td>
+              <td class="cart-td">
+                <input
+                  type="number"
+                  [value]="item.quantity"
+                  min="1"
+                  [max]="item.product.stock"
+                  (change)="updateQuantity(item.product.id, $event)"
+                  class="qty-input">
+              </td>
+              <td class="cart-td">{{ item.product.price * item.quantity | currency:'RON ':'symbol':'1.2-2' }}</td>
+              <td class="cart-td">
+                <button class="btn-remove" (click)="remove(item.product.id)">✕</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cart-summary">
+        <div class="cart-total">
+          <span>Total:</span>
+          <strong>{{ total | currency:'RON ':'symbol':'1.2-2' }}</strong>
+        </div>
+        <div class="cart-actions">
+          <a routerLink="/products" class="btn-secondary">← Continue Shopping</a>
+          <a routerLink="/checkout" class="btn-primary">Proceed to Checkout →</a>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

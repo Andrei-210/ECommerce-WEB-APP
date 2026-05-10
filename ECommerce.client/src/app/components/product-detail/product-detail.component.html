@@ -1,0 +1,195 @@
+<div class="page-container" *ngIf="!loading && !error && product">
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/products">Products</a>
+    <span> / </span>
+    <span>{{ product.category }}</span>
+    <span> / </span>
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <!-- Main Product Section -->
+  <div class="product-detail-grid">
+
+    <!-- Image -->
+    <div class="product-detail-image-wrapper">
+      <img
+        [src]="product.imageUrl || 'https://via.placeholder.com/500x400?text=No+Image'"
+        [alt]="product.name"
+        class="product-detail-image"
+        (error)="$any($event.target).src='https://via.placeholder.com/500x400?text=No+Image'">
+      <span class="detail-category-badge">{{ product.category }}</span>
+    </div>
+
+    <!-- Info -->
+    <div class="product-detail-info">
+      <p class="detail-brand">{{ product.brand }}</p>
+      <h1 class="detail-name">{{ product.name }}</h1>
+
+      <!-- Rating summary -->
+      <div class="detail-rating" *ngIf="product.reviewCount > 0">
+        <span class="stars-row">
+          <span *ngFor="let s of stars(5)" class="star" [class.star-filled]="s < product.averageRating">★</span>
+        </span>
+        <span class="rating-label">{{ product.averageRating | number:'1.1-1' }} / 5</span>
+        <span class="rating-count">({{ product.reviewCount }} review{{ product.reviewCount !== 1 ? 's' : '' }})</span>
+      </div>
+      <div class="detail-rating" *ngIf="product.reviewCount === 0">
+        <span class="no-reviews">No reviews yet</span>
+      </div>
+
+      <!-- Price & Stock -->
+      <div class="detail-price-row">
+        <span class="detail-price">{{ product.price | currency:'RON ':'symbol':'1.2-2' }}</span>
+        <span class="detail-stock" [class.out-of-stock]="product.stock === 0">
+          {{ product.stock > 0 ? 'In stock: ' + product.stock + ' units' : 'Out of stock' }}
+        </span>
+      </div>
+
+      <!-- Cart controls -->
+      <div class="detail-cart-controls" *ngIf="product.stock > 0">
+        <div class="qty-selector">
+          <button (click)="quantity = quantity > 1 ? quantity - 1 : 1" class="qty-btn">−</button>
+          <span class="qty-value">{{ quantity }}</span>
+          <button (click)="quantity = quantity < maxAddable ? quantity + 1 : quantity" class="qty-btn">+</button>
+        </div>
+        <button
+          class="btn-primary btn-add-detail"
+          [class.added]="addedToCart"
+          [disabled]="maxAddable === 0"
+          (click)="addToCart()">
+          {{ addedToCart ? '✓ Added to Cart!' : maxAddable === 0 ? 'Max stock in cart' : '🛒 Add to Cart' }}
+        </button>
+      </div>
+      <div *ngIf="product.stock === 0" class="out-of-stock-msg">This product is currently out of stock.</div>
+
+      <!-- Quick specs preview -->
+      <div class="quick-specs" *ngIf="product.specifications.length > 0">
+        <div class="quick-spec-row" *ngFor="let spec of product.specifications.slice(0, 4)">
+          <span class="spec-key">{{ spec.key }}</span>
+          <span class="spec-value">{{ spec.value }}</span>
+        </div>
+        <button class="link-btn" (click)="activeTab = 'specs'" *ngIf="product.specifications.length > 4">
+          View all specifications →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">Description</button>
+      <button [class.active]="activeTab === 'specs'" (click)="activeTab = 'specs'">
+        Specifications ({{ product.specifications.length }})
+      </button>
+      <button [class.active]="activeTab === 'reviews'" (click)="activeTab = 'reviews'">
+        Reviews ({{ product.reviewCount }})
+      </button>
+    </div>
+
+    <!-- Description Tab -->
+    <div class="tab-panel" *ngIf="activeTab === 'description'">
+      <p class="product-full-description">{{ product.description }}</p>
+    </div>
+
+    <!-- Specs Tab -->
+    <div class="tab-panel" *ngIf="activeTab === 'specs'">
+      <table class="specs-table" *ngIf="product.specifications.length > 0; else noSpecs">
+        <tbody>
+          <tr *ngFor="let spec of product.specifications">
+            <td class="spec-key-cell">{{ spec.key }}</td>
+            <td class="spec-value-cell">{{ spec.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noSpecs>
+        <p class="empty-tab">No specifications available for this product.</p>
+      </ng-template>
+    </div>
+
+    <!-- Reviews Tab -->
+    <div class="tab-panel" *ngIf="activeTab === 'reviews'">
+
+      <!-- Write Review -->
+      <div class="review-form-section" *ngIf="isLoggedIn && !hasReviewed">
+        <h3>Write a Review</h3>
+        <div *ngIf="reviewError" class="alert-error">{{ reviewError }}</div>
+        <div *ngIf="reviewSuccess" class="alert-success">{{ reviewSuccess }}</div>
+
+        <div class="form-group">
+          <label>Rating *</label>
+          <div class="star-selector">
+            <span
+              *ngFor="let s of [1,2,3,4,5]"
+              class="star-pick"
+              [class.selected]="s <= displayRating"
+              (click)="setRating(s)"
+              (mouseenter)="setHoverRating(s)"
+              (mouseleave)="clearHover()">★</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="rtitle">Title *</label>
+          <input id="rtitle" type="text" [(ngModel)]="reviewTitle"
+            placeholder="Summarize your experience" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="rbody">Review</label>
+          <textarea id="rbody" [(ngModel)]="reviewBody" rows="4"
+            placeholder="Share details about your experience with this product..."
+            class="form-control"></textarea>
+        </div>
+
+        <button class="btn-primary" [disabled]="reviewLoading" (click)="submitReview()">
+          {{ reviewLoading ? 'Submitting...' : 'Submit Review' }}
+        </button>
+      </div>
+
+      <div class="review-login-note" *ngIf="!isLoggedIn">
+        <a routerLink="/login">Login</a> to leave a review.
+      </div>
+
+      <div class="review-already" *ngIf="isLoggedIn && hasReviewed">
+        ✓ You have already reviewed this product.
+      </div>
+
+      <!-- Reviews List -->
+      <div class="reviews-list" *ngIf="product.reviews.length > 0">
+        <div class="review-card" *ngFor="let review of product.reviews">
+          <div class="review-header">
+            <div class="review-stars">
+              <span *ngFor="let s of [1,2,3,4,5]" class="star"
+                [class.star-filled]="s <= review.rating">★</span>
+            </div>
+            <strong class="review-title">{{ review.title }}</strong>
+          </div>
+          <p class="review-body" *ngIf="review.body">{{ review.body }}</p>
+          <div class="review-meta">
+            <span class="review-author">{{ review.username }}</span>
+            <span class="review-date">{{ review.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="empty-tab" *ngIf="product.reviews.length === 0 && !isLoggedIn">
+        No reviews yet. Be the first to review this product!
+      </p>
+      <p class="empty-tab" *ngIf="product.reviews.length === 0 && isLoggedIn && !hasReviewed">
+        No reviews yet. Share your experience!
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="page-container" *ngIf="loading">
+  <div class="loading">Loading product...</div>
+</div>
+
+<div class="page-container" *ngIf="error">
+  <div class="alert-error">{{ error }}</div>
+  <a routerLink="/products" class="btn-secondary" style="margin-top:1rem">← Back to Products</a>
+</div>

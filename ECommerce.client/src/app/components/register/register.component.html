@@ -1,0 +1,40 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="auth-subtitle">Join TechShop to start ordering</p>
+
+    <div *ngIf="error" class="alert-error">{{ error }}</div>
+
+    <div class="form-group">
+      <label for="username">Username *</label>
+      <input id="username" type="text" [(ngModel)]="username"
+        placeholder="johndoe" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input id="email" type="email" [(ngModel)]="email"
+        placeholder="john@example.com" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password *</label>
+      <input id="password" type="password" [(ngModel)]="password"
+        placeholder="At least 6 characters" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <div class="form-group">
+      <label for="confirm">Confirm Password *</label>
+      <input id="confirm" type="password" [(ngModel)]="confirmPassword"
+        placeholder="Repeat password" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <button class="btn-primary btn-full" [disabled]="loading" (click)="onSubmit()">
+      {{ loading ? 'Creating account...' : 'Register' }}
+    </button>
+
+    <p class="auth-footer">
+      Already have an account? <a routerLink="/login">Login here</a>
+    </p>
+  </div>
+</div>

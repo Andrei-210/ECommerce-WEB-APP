@@ -1,0 +1,74 @@
+<div class="page-container">
+  <h2 class="page-title">Checkout</h2>
+
+  <!-- Order Success -->
+  <div *ngIf="success" class="success-card">
+    <div class="success-icon">✅</div>
+    <h3>Order Placed Successfully!</h3>
+    <p>Order <strong>#{{ success.orderId }}</strong> has been confirmed.</p>
+    <p>Total: <strong>{{ success.totalPrice | currency:'RON ':'symbol':'1.2-2' }}</strong></p>
+    <a routerLink="/products" class="btn-primary">Continue Shopping</a>
+  </div>
+
+  <div *ngIf="!success" class="checkout-layout">
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <div *ngIf="cartItems.length === 0" class="empty-cart">
+        <p>Your cart is empty. <a routerLink="/products">Add products first.</a></p>
+      </div>
+      <div *ngFor="let item of cartItems" class="summary-item">
+        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+        <span>{{ item.product.price * item.quantity | currency:'RON ':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="summary-total" *ngIf="cartItems.length > 0">
+        <strong>Total</strong>
+        <strong>{{ total | currency:'RON ':'symbol':'1.2-2' }}</strong>
+      </div>
+    </div>
+
+    <!-- Shipping Form -->
+    <div class="shipping-form">
+      <h3>Shipping Address</h3>
+      <div *ngIf="error" class="alert-error">{{ error }}</div>
+
+      <div class="form-group">
+        <label for="address">Street Address *</label>
+        <input
+          id="address"
+          type="text"
+          [(ngModel)]="shippingAddress"
+          placeholder="Str. Libertatii, Nr. 10"
+          class="form-control">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">City *</label>
+          <input
+            id="city"
+            type="text"
+            [(ngModel)]="city"
+            placeholder="Craiova"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="postal">Postal Code *</label>
+          <input
+            id="postal"
+            type="text"
+            [(ngModel)]="postalCode"
+            placeholder="200001"
+            class="form-control">
+        </div>
+      </div>
+
+      <button
+        class="btn-primary btn-full"
+        [disabled]="loading || cartItems.length === 0"
+        (click)="placeOrder()">
+        {{ loading ? 'Placing Order...' : '✓ Place Order' }}
+      </button>
+    </div>
+  </div>
+</div>

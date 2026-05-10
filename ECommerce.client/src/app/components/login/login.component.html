@@ -1,0 +1,28 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2>Welcome Back</h2>
+    <p class="auth-subtitle">Sign in to your TechShop account</p>
+
+    <div *ngIf="error" class="alert-error">{{ error }}</div>
+
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input id="email" type="email" [(ngModel)]="email"
+        placeholder="john@example.com" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password *</label>
+      <input id="password" type="password" [(ngModel)]="password"
+        placeholder="Your password" class="form-control" (keyup.enter)="onSubmit()">
+    </div>
+
+    <button class="btn-primary btn-full" [disabled]="loading" (click)="onSubmit()">
+      {{ loading ? 'Signing in...' : 'Login' }}
+    </button>
+
+    <p class="auth-footer">
+      No account yet? <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>
