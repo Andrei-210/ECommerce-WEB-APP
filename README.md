@@ -130,3 +130,11 @@ Authentication uses JWT Bearer tokens. After logging in, the token is stored in 
 - Dependency Injection is configured in `Program.cs` for all repositories and services.
 - The total order price is always calculated server-side from the product database during checkout. The price sent by the frontend is ignored.
 - Cart state in the frontend is managed via an Angular Service using `BehaviorSubject` (RxJS), so the cart counter updates instantly across all components.
+
+---
+
+## Author
+
+- **Nicoli Andrei - Claudiu**
+- **Third-year student at University of Craiova, Faculty of Automatics, Computer Science and Engineering**
+
